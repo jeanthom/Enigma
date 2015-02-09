@@ -42,6 +42,7 @@ import cuchaz.enigma.analysis.JarIndex;
 import cuchaz.enigma.convert.ClassNamer.SidedClassNamer;
 import cuchaz.enigma.mapping.ClassEntry;
 import cuchaz.enigma.mapping.ClassMapping;
+import cuchaz.enigma.mapping.JavassistUtil;
 import cuchaz.enigma.mapping.MappingParseException;
 import cuchaz.enigma.mapping.Mappings;
 import cuchaz.enigma.mapping.MappingsReader;
@@ -241,23 +242,13 @@ public class ClassMatcher {
 					System.err.println("\tAvailable dest methods:");
 					CtClass c = destLoader.loadClass(classMapping.getObfName());
 					for (CtBehavior behavior : c.getDeclaredBehaviors()) {
-						MethodEntry declaredMethodEntry = new MethodEntry(
-							new ClassEntry(classMapping.getObfName()),
-							behavior.getName(),
-							behavior.getSignature()
-						);
-						System.err.println("\t\t" + declaredMethodEntry);
+						System.err.println("\t\t" + JavassistUtil.getBehaviorEntry(behavior));
 					}
 					
 					System.err.println("\tAvailable source methods:");
 					c = sourceLoader.loadClass(matchedClassNames.inverse().get(classMapping.getObfName()));
 					for (CtBehavior behavior : c.getDeclaredBehaviors()) {
-						MethodEntry declaredMethodEntry = new MethodEntry(
-							new ClassEntry(classMapping.getObfName()),
-							behavior.getName(),
-							behavior.getSignature()
-						);
-						System.err.println("\t\t" + declaredMethodEntry);
+						System.err.println("\t\t" + JavassistUtil.getBehaviorEntry(behavior));
 					}
 				}
 			}

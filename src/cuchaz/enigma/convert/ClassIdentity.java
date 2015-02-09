@@ -50,12 +50,11 @@ import cuchaz.enigma.bytecode.accessors.ConstInfoAccessor;
 import cuchaz.enigma.convert.ClassNamer.SidedClassNamer;
 import cuchaz.enigma.mapping.BehaviorEntry;
 import cuchaz.enigma.mapping.ClassEntry;
-import cuchaz.enigma.mapping.ConstructorEntry;
+import cuchaz.enigma.mapping.ClassNameReplacer;
 import cuchaz.enigma.mapping.Entry;
 import cuchaz.enigma.mapping.FieldEntry;
-import cuchaz.enigma.mapping.MethodEntry;
-import cuchaz.enigma.mapping.SignatureUpdater;
-import cuchaz.enigma.mapping.SignatureUpdater.ClassNameUpdater;
+import cuchaz.enigma.mapping.JavassistUtil;
+import cuchaz.enigma.mapping.Signature;
 
 public class ClassIdentity {
 	
@@ -122,15 +121,9 @@ public class ClassIdentity {
 					addReference(reference);
 				}
 			}
-			for (CtMethod method : c.getDeclaredMethods()) {
-				MethodEntry methodEntry = new MethodEntry(m_classEntry, method.getName(), method.getSignature());
-				for (EntryReference<BehaviorEntry,BehaviorEntry> reference : index.getBehaviorReferences(methodEntry)) {
-					addReference(reference);
-				}
-			}
-			for (CtConstructor constructor : c.getDeclaredConstructors()) {
-				ConstructorEntry constructorEntry = new ConstructorEntry(m_classEntry, constructor.getSignature());
-				for (EntryReference<BehaviorEntry,BehaviorEntry> reference : index.getBehaviorReferences(constructorEntry)) {
+			for (CtBehavior behavior : c.getDeclaredBehaviors()) {
+				BehaviorEntry behaviorEntry = JavassistUtil.getBehaviorEntry(behavior);
+				for (EntryReference<BehaviorEntry,BehaviorEntry> reference : index.getBehaviorReferences(behaviorEntry)) {
 					addReference(reference);
 				}
 			}
@@ -205,11 +198,18 @@ public class ClassIdentity {
 	}
 	
 	private String scrubSignature(String signature) {
-		return SignatureUpdater.update(signature, new ClassNameUpdater() {
+		return scrubSignature(new Signature(signature));
+	}
+	
+	private String scrubSignature(Signature signature) {
+		
+		return new Signature(signature, new ClassNameReplacer() {
+			
 			private Map<String,String> m_classNames = Maps.newHashMap();
 			
 			@Override
-			public String update(String className) {
+			public String replace(String className) {
+				
 				// classes not in the none package can be passed through
 				ClassEntry classEntry = new ClassEntry(className);
 				if (!classEntry.getPackageName().equals(Constants.NonePackage)) {
@@ -239,7 +239,7 @@ public class ClassIdentity {
 			private String getNewClassName() {
 				return String.format("C%03d", m_classNames.size());
 			}
-		});
+		}).toString();
 	}
 	
 	private boolean isClassMatchedUniquely(String className) {

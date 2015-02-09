@@ -19,13 +19,13 @@ public class ConstructorEntry implements BehaviorEntry, Serializable {
 	private static final long serialVersionUID = -868346075317366758L;
 	
 	private ClassEntry m_classEntry;
-	private String m_signature;
+	private Signature m_signature;
 	
 	public ConstructorEntry(ClassEntry classEntry) {
 		this(classEntry, null);
 	}
 	
-	public ConstructorEntry(ClassEntry classEntry, String signature) {
+	public ConstructorEntry(ClassEntry classEntry, Signature signature) {
 		if (classEntry == null) {
 			throw new IllegalArgumentException("Class cannot be null!");
 		}
@@ -62,7 +62,7 @@ public class ConstructorEntry implements BehaviorEntry, Serializable {
 	}
 	
 	@Override
-	public String getSignature() {
+	public Signature getSignature() {
 		return m_signature;
 	}
 	

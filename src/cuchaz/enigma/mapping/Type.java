@@ -42,6 +42,10 @@ public class Type {
 	
 	public static String parseFirst(String in) {
 		
+		if (in == null || in.length() <= 0) {
+			throw new IllegalArgumentException("No type to parse, input is empty!");
+		}
+		
 		// read one type from the input
 		
 		char c = in.charAt(0);
@@ -82,6 +86,21 @@ public class Type {
 		m_name = "L" + classEntry.getClassName() + ";";
 	}
 	
+	public Type(Type type, ClassNameReplacer replacer) {
+		m_name = type.m_name;
+		if (type.isClass()) {
+			String replacedName = replacer.replace(type.getClassEntry().getClassName());
+			if (replacedName != null) {
+				m_name = "L" + replacedName + ";";
+			}
+		} else if (type.isArray() && type.hasClass()) {
+			String replacedName = replacer.replace(type.getClassEntry().getClassName());
+			if (replacedName != null) {
+				m_name = Type.getArrayPrefix(type.getArrayDimension()) + "L" + replacedName + ";";
+			}
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return m_name;
@@ -107,18 +126,22 @@ public class Type {
 	}
 	
 	public ClassEntry getClassEntry() {
-		if (!isClass()) {
-			throw new IllegalStateException("not a class");
+		if (isClass()) {
+			String name = m_name.substring(1, m_name.length() - 1);
+			
+			int pos = name.indexOf('<');
+			if (pos >= 0) {
+				// remove the parameters from the class name
+				name = name.substring(0, pos);
+			}
+			
+			return new ClassEntry(name);
+			
+		} else if (isArray() && getArrayType().isClass()) {
+			return getArrayType().getClassEntry();
+		} else {
+			throw new IllegalStateException("type doesn't have a class");
 		}
-		String name = m_name.substring(1, m_name.length() - 1);
-		
-		int pos = name.indexOf('<');
-		if (pos >= 0) {
-			// remove the parameters from the class name
-			name = name.substring(0, pos);
-		}
-		
-		return new ClassEntry(name);
 	}
 	
 	public boolean isArray() {
@@ -139,6 +162,18 @@ public class Type {
 		return new Type(m_name.substring(getArrayDimension(), m_name.length()));
 	}
 	
+	private static String getArrayPrefix(int dimension) {
+		StringBuilder buf = new StringBuilder();
+		for (int i=0; i<dimension; i++) {
+			buf.append("[");
+		}
+		return buf.toString();
+	}
+	
+	public boolean hasClass() {
+		return isClass() || (isArray() && getArrayType().hasClass());
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Type) {
@@ -149,6 +184,10 @@ public class Type {
 	
 	public boolean equals(Type other) {
 		return m_name.equals(other.m_name);
+	}
+	
+	public int hashCode() {
+		return m_name.hashCode();
 	}
 	
 	private static int countArrayDimension(String in) {

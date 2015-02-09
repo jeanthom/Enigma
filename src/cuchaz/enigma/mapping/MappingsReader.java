@@ -18,7 +18,6 @@ import java.util.Deque;
 import com.google.common.collect.Queues;
 
 import cuchaz.enigma.Constants;
-import cuchaz.enigma.mapping.SignatureUpdater.ClassNameUpdater;
 
 public class MappingsReader {
 	
@@ -147,12 +146,12 @@ public class MappingsReader {
 	private MethodMapping readMethod(String[] parts) {
 		if (parts.length == 3) {
 			String obfName = parts[1];
-			String obfSignature = moveSignatureOutOfDefaultPackage(parts[2], Constants.NonePackage);
+			Signature obfSignature = moveSignatureOutOfDefaultPackage(new Signature(parts[2]), Constants.NonePackage);
 			return new MethodMapping(obfName, obfSignature);
 		} else {
 			String obfName = parts[1];
 			String deobfName = parts[2];
-			String obfSignature = moveSignatureOutOfDefaultPackage(parts[3], Constants.NonePackage);
+			Signature obfSignature = moveSignatureOutOfDefaultPackage(new Signature(parts[3]), Constants.NonePackage);
 			if (obfName.equals(deobfName)) {
 				return new MethodMapping(obfName, obfSignature);
 			} else {
@@ -161,15 +160,15 @@ public class MappingsReader {
 		}
 	}
 	
-	private String moveSignatureOutOfDefaultPackage(String signature, final String newPackageName) {
-		return SignatureUpdater.update(signature, new ClassNameUpdater() {
+	private Signature moveSignatureOutOfDefaultPackage(Signature signature, final String newPackageName) {
+		return new Signature(signature, new ClassNameReplacer() {
 			@Override
-			public String update(String className) {
+			public String replace(String className) {
 				ClassEntry classEntry = new ClassEntry(className);
 				if (classEntry.isInDefaultPackage()) {
 					return newPackageName + "/" + className;
 				}
-				return className;
+				return null;
 			}
 		});
 	}

@@ -72,6 +72,12 @@ public class TestType {
 	}
 	
 	@Test
+	public void getArrayClassEntry() {
+		assertThat(new Type("[LFoo;").getClassEntry(), is(newClass("Foo")));
+		assertThat(new Type("[[[LFoo<Ljava/lang/String;>;").getClassEntry(), is(newClass("Foo")));
+	}
+	
+	@Test
 	public void isArray() {
 		assertThat(new Type("V").isArray(), is(false));
 		assertThat(new Type("Z").isArray(), is(false));
@@ -98,6 +104,19 @@ public class TestType {
 		assertThat(new Type("[[I").getArrayType(), is(new Type("I")));
 		assertThat(new Type("[[[I").getArrayType(), is(new Type("I")));
 		assertThat(new Type("[Ljava/lang/String;").getArrayType(), is(new Type("Ljava/lang/String;")));
+	}
+	
+	@Test
+	public void hasClass() {
+		assertThat(new Type("LFoo;").hasClass(), is(true));
+		assertThat(new Type("LCow<LCheese;>;").hasClass(), is(true));
+		assertThat(new Type("[LBar;").hasClass(), is(true));
+		assertThat(new Type("[[[LCat;").hasClass(), is(true));
+
+		assertThat(new Type("V").hasClass(), is(false));
+		assertThat(new Type("[I").hasClass(), is(false));
+		assertThat(new Type("[[[I").hasClass(), is(false));
+		assertThat(new Type("Z").hasClass(), is(false));
 	}
 	
 	@Test
@@ -179,5 +198,32 @@ public class TestType {
 			assertThat(Type.parseFirst("[LFoo;[I"), is(answer));
 			assertThat(Type.parseFirst("[LFoo;LFoo;"), is(answer));
 		}
+	}
+	
+	@Test
+	public void equals() {
+		assertThat(new Type("V"), is(new Type("V")));
+		assertThat(new Type("Z"), is(new Type("Z")));
+		assertThat(new Type("B"), is(new Type("B")));
+		assertThat(new Type("C"), is(new Type("C")));
+		assertThat(new Type("I"), is(new Type("I")));
+		assertThat(new Type("J"), is(new Type("J")));
+		assertThat(new Type("F"), is(new Type("F")));
+		assertThat(new Type("D"), is(new Type("D")));
+		assertThat(new Type("LFoo;"), is(new Type("LFoo;")));
+		assertThat(new Type("[I"), is(new Type("[I")));
+		assertThat(new Type("[[[I"), is(new Type("[[[I")));
+		assertThat(new Type("[LFoo;"), is(new Type("[LFoo;")));
+		assertThat(new Type("LFoo<LBar;>;"), is(new Type("LFoo<LBar;>;")));
+		
+		assertThat(new Type("V"), is(not(new Type("I"))));
+		assertThat(new Type("I"), is(not(new Type("J"))));
+		assertThat(new Type("I"), is(not(new Type("LBar;"))));
+		assertThat(new Type("I"), is(not(new Type("[I"))));
+		assertThat(new Type("LFoo;"), is(not(new Type("LBar;"))));
+		assertThat(new Type("LFoo<LBar;>;"), is(not(new Type("LFoo<LCow;>;"))));
+		assertThat(new Type("[I"), is(not(new Type("[Z"))));
+		assertThat(new Type("[[[I"), is(not(new Type("[I"))));
+		assertThat(new Type("[LFoo;"), is(not(new Type("[LBar;"))));
 	}
 }

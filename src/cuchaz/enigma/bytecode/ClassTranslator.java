@@ -26,8 +26,11 @@ import cuchaz.enigma.mapping.BehaviorEntry;
 import cuchaz.enigma.mapping.BehaviorEntryFactory;
 import cuchaz.enigma.mapping.ClassEntry;
 import cuchaz.enigma.mapping.FieldEntry;
+import cuchaz.enigma.mapping.JavassistUtil;
 import cuchaz.enigma.mapping.MethodEntry;
+import cuchaz.enigma.mapping.Signature;
 import cuchaz.enigma.mapping.Translator;
+import cuchaz.enigma.mapping.Type;
 
 public class ClassTranslator {
 	
@@ -57,11 +60,11 @@ public class ClassTranslator {
 					FieldEntry translatedEntry = m_translator.translateEntry(entry);
 					
 					// translate the type
-					String type = constants.getFieldrefType(i);
-					String translatedType = m_translator.translateSignature(type);
+					Type type = new Type(constants.getFieldrefType(i));
+					Type translatedType = m_translator.translateType(type);
 					
 					if (!entry.equals(translatedEntry) || !type.equals(translatedType)) {
-						editor.changeMemberrefNameAndType(i, translatedEntry.getName(), translatedType);
+						editor.changeMemberrefNameAndType(i, translatedEntry.getName(), translatedType.toString());
 					}
 				}
 				break;
@@ -78,7 +81,7 @@ public class ClassTranslator {
 					BehaviorEntry translatedEntry = m_translator.translateEntry(entry);
 					
 					if (!entry.getName().equals(translatedEntry.getName()) || !entry.getSignature().equals(translatedEntry.getSignature())) {
-						editor.changeMemberrefNameAndType(i, translatedEntry.getName(), translatedEntry.getSignature());
+						editor.changeMemberrefNameAndType(i, translatedEntry.getName(), translatedEntry.getSignature().toString());
 					}
 				}
 				break;
@@ -98,8 +101,8 @@ public class ClassTranslator {
 			}
 			
 			// translate the type
-			String translatedType = m_translator.translateSignature(field.getFieldInfo().getDescriptor());
-			field.getFieldInfo().setDescriptor(translatedType);
+			Type translatedType = m_translator.translateType(new Type(field.getFieldInfo().getDescriptor()));
+			field.getFieldInfo().setDescriptor(translatedType.toString());
 		}
 		
 		// translate all the methods and constructors
@@ -108,7 +111,7 @@ public class ClassTranslator {
 				CtMethod method = (CtMethod)behavior;
 				
 				// translate the name
-				MethodEntry entry = new MethodEntry(classEntry, method.getName(), method.getSignature());
+				MethodEntry entry = JavassistUtil.getMethodEntry(method);
 				String translatedName = m_translator.translate(entry);
 				if (translatedName != null) {
 					method.setName(translatedName);
@@ -116,8 +119,8 @@ public class ClassTranslator {
 			}
 			
 			// translate the type
-			String translatedSignature = m_translator.translateSignature(behavior.getMethodInfo().getDescriptor());
-			behavior.getMethodInfo().setDescriptor(translatedSignature);
+			Signature translatedSignature = m_translator.translateSignature(new Signature(behavior.getMethodInfo().getDescriptor()));
+			behavior.getMethodInfo().setDescriptor(translatedSignature.toString());
 		}
 		
 		// translate all the class names referenced in the code

@@ -6,11 +6,10 @@ import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.bytecode.Descriptor;
-import cuchaz.enigma.mapping.BehaviorEntry;
-import cuchaz.enigma.mapping.ClassEntry;
-import cuchaz.enigma.mapping.ConstructorEntry;
-import cuchaz.enigma.mapping.FieldEntry;
-import cuchaz.enigma.mapping.MethodEntry;
+import javassist.expr.ConstructorCall;
+import javassist.expr.FieldAccess;
+import javassist.expr.MethodCall;
+import javassist.expr.NewExpr;
 
 public class JavassistUtil {
 	
@@ -26,14 +25,36 @@ public class JavassistUtil {
 		return new MethodEntry(
 			getClassEntry(method.getDeclaringClass()),
 			method.getName(),
-			method.getMethodInfo().getDescriptor()
+			new Signature(method.getMethodInfo().getDescriptor())
+		);
+	}
+	
+	public static MethodEntry getMethodEntry(MethodCall call) {
+		return new MethodEntry(
+			new ClassEntry(Descriptor.toJvmName(call.getClassName())),
+			call.getMethodName(),
+			new Signature(call.getSignature())
 		);
 	}
 	
 	public static ConstructorEntry getConstructorEntry(CtConstructor constructor) {
 		return new ConstructorEntry(
 			getClassEntry(constructor.getDeclaringClass()),
-			constructor.getMethodInfo().getDescriptor()
+			new Signature(constructor.getMethodInfo().getDescriptor())
+		);
+	}
+	
+	public static ConstructorEntry getConstructorEntry(ConstructorCall call) {
+		return new ConstructorEntry(
+			new ClassEntry(Descriptor.toJvmName(call.getClassName())),
+			new Signature(call.getSignature())
+		);
+	}
+	
+	public static ConstructorEntry getConstructorEntry(NewExpr call) {
+		return new ConstructorEntry(
+			new ClassEntry(Descriptor.toJvmName(call.getClassName())),
+			new Signature(call.getSignature())
 		);
 	}
 	
@@ -50,6 +71,13 @@ public class JavassistUtil {
 		return new FieldEntry(
 			getClassEntry(field.getDeclaringClass()),
 			field.getName()
+		);
+	}
+	
+	public static FieldEntry getFieldEntry(FieldAccess call) {
+		return new FieldEntry(
+			new ClassEntry(Descriptor.toJvmName(call.getClassName())),
+			call.getFieldName()
 		);
 	}
 }

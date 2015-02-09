@@ -24,17 +24,16 @@ import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.JarIndex;
 import cuchaz.enigma.mapping.BehaviorEntry;
 import cuchaz.enigma.mapping.ClassEntry;
-import cuchaz.enigma.mapping.ConstructorEntry;
 
 public class TestJarIndexConstructorReferences {
 	
 	private JarIndex m_index;
 	
-	private ClassEntry m_baseClass = new ClassEntry("none/a");
-	private ClassEntry m_subClass = new ClassEntry("none/d");
-	private ClassEntry m_subsubClass = new ClassEntry("none/e");
-	private ClassEntry m_defaultClass = new ClassEntry("none/c");
-	private ClassEntry m_callerClass = new ClassEntry("none/b");
+	private ClassEntry m_baseClass = newClass("none/a");
+	private ClassEntry m_subClass = newClass("none/d");
+	private ClassEntry m_subsubClass = newClass("none/e");
+	private ClassEntry m_defaultClass = newClass("none/c");
+	private ClassEntry m_callerClass = newClass("none/b");
 	
 	public TestJarIndexConstructorReferences()
 	throws Exception {
@@ -51,7 +50,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void baseDefault() {
-		BehaviorEntry source = new ConstructorEntry(m_baseClass, "()V");
+		BehaviorEntry source = newConstructor(m_baseClass, "()V");
 		Collection<EntryReference<BehaviorEntry,BehaviorEntry>> references = m_index.getBehaviorReferences(source);
 		assertThat(references, containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_callerClass.getName(), "a", "()V"),
@@ -63,7 +62,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void baseInt() {
-		BehaviorEntry source = new ConstructorEntry(m_baseClass, "(I)V");
+		BehaviorEntry source = newConstructor(m_baseClass, "(I)V");
 		assertThat(m_index.getBehaviorReferences(source), containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_callerClass.getName(), "b", "()V")
 		));
@@ -72,7 +71,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void subDefault() {
-		BehaviorEntry source = new ConstructorEntry(m_subClass, "()V");
+		BehaviorEntry source = newConstructor(m_subClass, "()V");
 		assertThat(m_index.getBehaviorReferences(source), containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_callerClass.getName(), "c", "()V"),
 			newBehaviorReferenceByConstructor(source, m_subClass.getName(), "(I)V")
@@ -82,7 +81,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void subInt() {
-		BehaviorEntry source = new ConstructorEntry(m_subClass, "(I)V");
+		BehaviorEntry source = newConstructor(m_subClass, "(I)V");
 		assertThat(m_index.getBehaviorReferences(source), containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_callerClass.getName(), "d", "()V"),
 			newBehaviorReferenceByConstructor(source, m_subClass.getName(), "(II)V"),
@@ -93,7 +92,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void subIntInt() {
-		BehaviorEntry source = new ConstructorEntry(m_subClass, "(II)V");
+		BehaviorEntry source = newConstructor(m_subClass, "(II)V");
 		assertThat(m_index.getBehaviorReferences(source), containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_callerClass.getName(), "e", "()V")
 		));
@@ -101,14 +100,14 @@ public class TestJarIndexConstructorReferences {
 	
 	@Test
 	public void subIntIntInt() {
-		BehaviorEntry source = new ConstructorEntry(m_subClass, "(III)V");
+		BehaviorEntry source = newConstructor(m_subClass, "(III)V");
 		assertThat(m_index.getBehaviorReferences(source), is(empty()));
 	}
 	
 	@Test
 	@SuppressWarnings("unchecked")
 	public void subsubInt() {
-		BehaviorEntry source = new ConstructorEntry(m_subsubClass, "(I)V");
+		BehaviorEntry source = newConstructor(m_subsubClass, "(I)V");
 		assertThat(m_index.getBehaviorReferences(source), containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_callerClass.getName(), "f", "()V")
 		));
@@ -117,7 +116,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void defaultConstructable() {
-		BehaviorEntry source = new ConstructorEntry(m_defaultClass, "()V");
+		BehaviorEntry source = newConstructor(m_defaultClass, "()V");
 		assertThat(m_index.getBehaviorReferences(source), containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_callerClass.getName(), "g", "()V")
 		));

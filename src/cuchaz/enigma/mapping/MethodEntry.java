@@ -20,9 +20,9 @@ public class MethodEntry implements BehaviorEntry, Serializable {
 	
 	private ClassEntry m_classEntry;
 	private String m_name;
-	private String m_signature;
+	private Signature m_signature;
 	
-	public MethodEntry(ClassEntry classEntry, String name, String signature) {
+	public MethodEntry(ClassEntry classEntry, String name, Signature signature) {
 		if (classEntry == null) {
 			throw new IllegalArgumentException("Class cannot be null!");
 		}
@@ -64,7 +64,7 @@ public class MethodEntry implements BehaviorEntry, Serializable {
 	}
 	
 	@Override
-	public String getSignature() {
+	public Signature getSignature() {
 		return m_signature;
 	}
 	

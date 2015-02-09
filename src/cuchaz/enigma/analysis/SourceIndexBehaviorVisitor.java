@@ -35,6 +35,7 @@ import cuchaz.enigma.mapping.ClassEntry;
 import cuchaz.enigma.mapping.ConstructorEntry;
 import cuchaz.enigma.mapping.FieldEntry;
 import cuchaz.enigma.mapping.MethodEntry;
+import cuchaz.enigma.mapping.Signature;
 
 public class SourceIndexBehaviorVisitor extends SourceIndexVisitor {
 	
@@ -64,11 +65,11 @@ public class SourceIndexBehaviorVisitor extends SourceIndexVisitor {
 		if (ref instanceof MethodReference) {
 			MethodReference methodRef = (MethodReference)ref;
 			if (methodRef.isConstructor()) {
-				behaviorEntry = new ConstructorEntry(classEntry, ref.getSignature());
+				behaviorEntry = new ConstructorEntry(classEntry, new Signature(ref.getSignature()));
 			} else if (methodRef.isTypeInitializer()) {
 				behaviorEntry = new ConstructorEntry(classEntry);
 			} else {
-				behaviorEntry = new MethodEntry(classEntry, ref.getName(), ref.getSignature());
+				behaviorEntry = new MethodEntry(classEntry, ref.getName(), new Signature(ref.getSignature()));
 			}
 		}
 		if (behaviorEntry != null) {
@@ -124,9 +125,9 @@ public class SourceIndexBehaviorVisitor extends SourceIndexVisitor {
 		MethodDefinition methodDef = (MethodDefinition)def.getMethod();
 		BehaviorEntry behaviorEntry;
 		if (methodDef.isConstructor()) {
-			behaviorEntry = new ConstructorEntry(classEntry, methodDef.getSignature());
+			behaviorEntry = new ConstructorEntry(classEntry, new Signature(methodDef.getSignature()));
 		} else {
-			behaviorEntry = new MethodEntry(classEntry, methodDef.getName(), methodDef.getSignature());
+			behaviorEntry = new MethodEntry(classEntry, methodDef.getName(), new Signature(methodDef.getSignature()));
 		}
 		ArgumentEntry argumentEntry = new ArgumentEntry(behaviorEntry, def.getPosition(), node.getName());
 		index.addDeclaration(node.getNameToken(), argumentEntry);
@@ -151,7 +152,7 @@ public class SourceIndexBehaviorVisitor extends SourceIndexVisitor {
 		MemberReference ref = node.getUserData(Keys.MEMBER_REFERENCE);
 		if (ref != null) {
 			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
-			ConstructorEntry constructorEntry = new ConstructorEntry(classEntry, ref.getSignature());
+			ConstructorEntry constructorEntry = new ConstructorEntry(classEntry, new Signature(ref.getSignature()));
 			if (node.getType() instanceof SimpleType) {
 				SimpleType simpleTypeNode = (SimpleType)node.getType();
 				index.addReference(simpleTypeNode.getIdentifierToken(), constructorEntry, m_behaviorEntry);

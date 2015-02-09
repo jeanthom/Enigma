@@ -15,7 +15,6 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import cuchaz.enigma.analysis.TranslationIndex;
-import cuchaz.enigma.mapping.SignatureUpdater.ClassNameUpdater;
 
 public class Translator {
 	
@@ -209,15 +208,20 @@ public class Translator {
 		return new ArgumentEntry(translateEntry(in.getBehaviorEntry()), in.getIndex(), name);
 	}
 	
-	public String translateSignature(String signature) {
-		return SignatureUpdater.update(signature, new ClassNameUpdater() {
+	public Type translateType(Type type) {
+		return new Type(type, new ClassNameReplacer() {
 			@Override
-			public String update(String className) {
-				String translatedName = translateClass(className);
-				if (translatedName != null) {
-					return translatedName;
-				}
-				return className;
+			public String replace(String className) {
+				return translateClass(className);
+			}
+		});
+	}
+	
+	public Signature translateSignature(Signature signature) {
+		return new Signature(signature, new ClassNameReplacer() {
+			@Override
+			public String replace(String className) {
+				return translateClass(className);
 			}
 		});
 	}

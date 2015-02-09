@@ -14,22 +14,20 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-import cuchaz.enigma.mapping.SignatureUpdater.ClassNameUpdater;
-
 public class MethodMapping implements Serializable, Comparable<MethodMapping> {
 	
 	private static final long serialVersionUID = -4409570216084263978L;
 	
 	private String m_obfName;
 	private String m_deobfName;
-	private String m_obfSignature;
+	private Signature m_obfSignature;
 	private Map<Integer,ArgumentMapping> m_arguments;
 	
-	public MethodMapping(String obfName, String obfSignature) {
+	public MethodMapping(String obfName, Signature obfSignature) {
 		this(obfName, obfSignature, null);
 	}
 	
-	public MethodMapping(String obfName, String obfSignature, String deobfName) {
+	public MethodMapping(String obfName, Signature obfSignature, String deobfName) {
 		if (obfName == null) {
 			throw new IllegalArgumentException("obf name cannot be null!");
 		}
@@ -54,7 +52,7 @@ public class MethodMapping implements Serializable, Comparable<MethodMapping> {
 		m_deobfName = NameValidator.validateMethodName(val);
 	}
 	
-	public String getObfSignature() {
+	public Signature getObfSignature() {
 		return m_obfSignature;
 	}
 	
@@ -133,18 +131,19 @@ public class MethodMapping implements Serializable, Comparable<MethodMapping> {
 	}
 	
 	public boolean renameObfClass(final String oldObfClassName, final String newObfClassName) {
+		
 		// rename obf classes in the signature
-		String newSignature = SignatureUpdater.update(m_obfSignature, new ClassNameUpdater() {
+		Signature newSignature = new Signature(m_obfSignature, new ClassNameReplacer() {
 			@Override
-			public String update(String className) {
+			public String replace(String className) {
 				if (className.equals(oldObfClassName)) {
 					return newObfClassName;
 				}
-				return className;
+				return null;
 			}
 		});
 		
-		if (newSignature != m_obfSignature) {
+		if (!newSignature.equals(m_obfSignature)) {
 			m_obfSignature = newSignature;
 			return true;
 		}

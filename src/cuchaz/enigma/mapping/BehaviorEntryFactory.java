@@ -23,11 +23,11 @@ public class BehaviorEntryFactory {
 	
 	public static BehaviorEntry create(ClassEntry classEntry, String name, String signature) {
 		if (name.equals("<init>")) {
-			return new ConstructorEntry(classEntry, signature);
+			return new ConstructorEntry(classEntry, new Signature(signature));
 		} else if (name.equals("<clinit>")) {
 			return new ConstructorEntry(classEntry);
 		} else {
-			return new MethodEntry(classEntry, name, signature);
+			return new MethodEntry(classEntry, name, new Signature(signature));
 		}
 	}
 	
@@ -48,10 +48,10 @@ public class BehaviorEntryFactory {
 	}
 	
 	public static BehaviorEntry createObf(ClassEntry classEntry, MethodMapping methodMapping) {
-		return create(classEntry, methodMapping.getObfName(), methodMapping.getObfSignature());
+		return create(classEntry, methodMapping.getObfName(), methodMapping.getObfSignature().toString());
 	}
 	
 	public static BehaviorEntry createDeobf(ClassEntry classEntry, MethodMapping methodMapping) {
-		return create(classEntry, methodMapping.getDeobfName(), methodMapping.getObfSignature());
+		return create(classEntry, methodMapping.getDeobfName(), methodMapping.getObfSignature().toString());
 	}
 }

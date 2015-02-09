@@ -17,6 +17,7 @@ import cuchaz.enigma.mapping.ClassEntry;
 import cuchaz.enigma.mapping.ConstructorEntry;
 import cuchaz.enigma.mapping.FieldEntry;
 import cuchaz.enigma.mapping.MethodEntry;
+import cuchaz.enigma.mapping.Signature;
 
 public class EntryFactory {
 	
@@ -25,15 +26,27 @@ public class EntryFactory {
 	}
 	
 	public static FieldEntry newField(String className, String fieldName) {
-		return new FieldEntry(newClass(className), fieldName);
+		return newField(newClass(className), fieldName);
+	}
+	
+	public static FieldEntry newField(ClassEntry classEntry, String fieldName) {
+		return new FieldEntry(classEntry, fieldName);
 	}
 	
 	public static MethodEntry newMethod(String className, String methodName, String methodSignature) {
-		return new MethodEntry(newClass(className), methodName, methodSignature);
+		return newMethod(newClass(className), methodName, methodSignature);
+	}
+	
+	public static MethodEntry newMethod(ClassEntry classEntry, String methodName, String methodSignature) {
+		return new MethodEntry(classEntry, methodName, new Signature(methodSignature));
 	}
 	
 	public static ConstructorEntry newConstructor(String className, String signature) {
-		return new ConstructorEntry(newClass(className), signature);
+		return newConstructor(newClass(className), signature);
+	}
+	
+	public static ConstructorEntry newConstructor(ClassEntry classEntry, String signature) {
+		return new ConstructorEntry(classEntry, new Signature(signature));
 	}
 	
 	public static EntryReference<FieldEntry,BehaviorEntry> newFieldReferenceByMethod(FieldEntry fieldEntry, String callerClassName, String callerName, String callerSignature) {

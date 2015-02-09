@@ -15,14 +15,9 @@ import java.util.List;
 
 import javassist.CtBehavior;
 import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtMethod;
-import javassist.bytecode.Descriptor;
 import cuchaz.enigma.mapping.ArgumentEntry;
 import cuchaz.enigma.mapping.BehaviorEntry;
-import cuchaz.enigma.mapping.ClassEntry;
-import cuchaz.enigma.mapping.ConstructorEntry;
-import cuchaz.enigma.mapping.MethodEntry;
+import cuchaz.enigma.mapping.BehaviorEntryFactory;
 import cuchaz.enigma.mapping.Translator;
 
 public class MethodParameterWriter {
@@ -36,24 +31,16 @@ public class MethodParameterWriter {
 	public void writeMethodArguments(CtClass c) {
 		
 		// Procyon will read method arguments from the "MethodParameters" attribute, so write those
-		ClassEntry classEntry = new ClassEntry(Descriptor.toJvmName(c.getName()));
 		for (CtBehavior behavior : c.getDeclaredBehaviors()) {
-			int numParams = Descriptor.numOfParameters(behavior.getMethodInfo().getDescriptor());
+			BehaviorEntry behaviorEntry = BehaviorEntryFactory.create(behavior);
+
+			// get the number of arguments
+			int numParams = behaviorEntry.getSignature().getArgumentTypes().size();
 			if (numParams <= 0) {
 				continue;
 			}
 			
-			// get the behavior entry
-			BehaviorEntry behaviorEntry;
-			if (behavior instanceof CtMethod) {
-				behaviorEntry = new MethodEntry(classEntry, behavior.getMethodInfo().getName(), behavior.getSignature());
-			} else if (behavior instanceof CtConstructor) {
-				behaviorEntry = new ConstructorEntry(classEntry, behavior.getSignature());
-			} else {
-				throw new Error("Unsupported behavior type: " + behavior.getClass().getName());
-			}
-			
-			// get the list of parameter names
+			// get the list of argument names
 			List<String> names = new ArrayList<String>(numParams);
 			for (int i = 0; i < numParams; i++) {
 				names.add(m_translator.translate(new ArgumentEntry(behaviorEntry, i, "")));

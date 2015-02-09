@@ -88,6 +88,7 @@ import cuchaz.enigma.mapping.FieldEntry;
 import cuchaz.enigma.mapping.IllegalNameException;
 import cuchaz.enigma.mapping.MappingParseException;
 import cuchaz.enigma.mapping.MethodEntry;
+import cuchaz.enigma.mapping.Signature;
 
 public class Gui {
 	
@@ -878,12 +879,12 @@ public class Gui {
 	private void showMethodEntry(MethodEntry entry) {
 		addNameValue(m_infoPanel, "Method", entry.getName());
 		addNameValue(m_infoPanel, "Class", entry.getClassEntry().getName());
-		addNameValue(m_infoPanel, "Signature", entry.getSignature());
+		addNameValue(m_infoPanel, "Signature", entry.getSignature().toString());
 	}
 	
 	private void showConstructorEntry(ConstructorEntry entry) {
 		addNameValue(m_infoPanel, "Constructor", entry.getClassEntry().getName());
-		addNameValue(m_infoPanel, "Signature", entry.getSignature());
+		addNameValue(m_infoPanel, "Signature", entry.getSignature().toString());
 	}
 	
 	private void showArgumentEntry(ArgumentEntry entry) {
@@ -1090,7 +1091,7 @@ public class Gui {
 		if (m_reference.entry instanceof ClassEntry) {
 			// look for calls to the default constructor
 			// TODO: get a list of all the constructors and find calls to all of them
-			BehaviorReferenceTreeNode node = m_controller.getMethodReferences(new ConstructorEntry((ClassEntry)m_reference.entry, "()V"));
+			BehaviorReferenceTreeNode node = m_controller.getMethodReferences(new ConstructorEntry((ClassEntry)m_reference.entry, new Signature("()V")));
 			m_callsTree.setModel(new DefaultTreeModel(node));
 		} else if (m_reference.entry instanceof FieldEntry) {
 			FieldReferenceTreeNode node = m_controller.getFieldReferences((FieldEntry)m_reference.entry);

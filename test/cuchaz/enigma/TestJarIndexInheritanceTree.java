@@ -26,7 +26,6 @@ import cuchaz.enigma.analysis.JarIndex;
 import cuchaz.enigma.analysis.TranslationIndex;
 import cuchaz.enigma.mapping.BehaviorEntry;
 import cuchaz.enigma.mapping.ClassEntry;
-import cuchaz.enigma.mapping.ConstructorEntry;
 import cuchaz.enigma.mapping.FieldEntry;
 import cuchaz.enigma.mapping.MethodEntry;
 
@@ -34,10 +33,10 @@ public class TestJarIndexInheritanceTree {
 	
 	private JarIndex m_index;
 	
-	private ClassEntry m_baseClass = new ClassEntry("none/a");
-	private ClassEntry m_subClassA = new ClassEntry("none/b");
-	private ClassEntry m_subClassAA = new ClassEntry("none/d");
-	private ClassEntry m_subClassB = new ClassEntry("none/c");
+	private ClassEntry m_baseClass = newClass("none/a");
+	private ClassEntry m_subClassA = newClass("none/b");
+	private ClassEntry m_subClassAA = newClass("none/d");
+	private ClassEntry m_subClassB = newClass("none/c");
 	private FieldEntry m_nameField = new FieldEntry(m_baseClass, "a");
 	private FieldEntry m_numThingsField = new FieldEntry(m_subClassB, "a");
 	
@@ -99,40 +98,40 @@ public class TestJarIndexInheritanceTree {
 		Set<MethodEntry> entries;
 		
 		// getName()
-		entries = m_index.getRelatedMethodImplementations(new MethodEntry(m_baseClass, "a", "()Ljava/lang/String;"));
+		entries = m_index.getRelatedMethodImplementations(newMethod(m_baseClass, "a", "()Ljava/lang/String;"));
 		assertThat(entries, containsInAnyOrder(
-			new MethodEntry(m_baseClass, "a", "()Ljava/lang/String;"),
-			new MethodEntry(m_subClassAA, "a", "()Ljava/lang/String;")
+			newMethod(m_baseClass, "a", "()Ljava/lang/String;"),
+			newMethod(m_subClassAA, "a", "()Ljava/lang/String;")
 		));
-		entries = m_index.getRelatedMethodImplementations(new MethodEntry(m_subClassAA, "a", "()Ljava/lang/String;"));
+		entries = m_index.getRelatedMethodImplementations(newMethod(m_subClassAA, "a", "()Ljava/lang/String;"));
 		assertThat(entries, containsInAnyOrder(
-			new MethodEntry(m_baseClass, "a", "()Ljava/lang/String;"),
-			new MethodEntry(m_subClassAA, "a", "()Ljava/lang/String;")
+			newMethod(m_baseClass, "a", "()Ljava/lang/String;"),
+			newMethod(m_subClassAA, "a", "()Ljava/lang/String;")
 		));
 		
 		// doBaseThings()
-		entries = m_index.getRelatedMethodImplementations(new MethodEntry(m_baseClass, "a", "()V"));
+		entries = m_index.getRelatedMethodImplementations(newMethod(m_baseClass, "a", "()V"));
 		assertThat(entries, containsInAnyOrder(
-			new MethodEntry(m_baseClass, "a", "()V"),
-			new MethodEntry(m_subClassAA, "a", "()V"),
-			new MethodEntry(m_subClassB, "a", "()V")
+			newMethod(m_baseClass, "a", "()V"),
+			newMethod(m_subClassAA, "a", "()V"),
+			newMethod(m_subClassB, "a", "()V")
 		));
-		entries = m_index.getRelatedMethodImplementations(new MethodEntry(m_subClassAA, "a", "()V"));
+		entries = m_index.getRelatedMethodImplementations(newMethod(m_subClassAA, "a", "()V"));
 		assertThat(entries, containsInAnyOrder(
-			new MethodEntry(m_baseClass, "a", "()V"),
-			new MethodEntry(m_subClassAA, "a", "()V"),
-			new MethodEntry(m_subClassB, "a", "()V")
+			newMethod(m_baseClass, "a", "()V"),
+			newMethod(m_subClassAA, "a", "()V"),
+			newMethod(m_subClassB, "a", "()V")
 		));
-		entries = m_index.getRelatedMethodImplementations(new MethodEntry(m_subClassB, "a", "()V"));
+		entries = m_index.getRelatedMethodImplementations(newMethod(m_subClassB, "a", "()V"));
 		assertThat(entries, containsInAnyOrder(
-			new MethodEntry(m_baseClass, "a", "()V"),
-			new MethodEntry(m_subClassAA, "a", "()V"),
-			new MethodEntry(m_subClassB, "a", "()V")
+			newMethod(m_baseClass, "a", "()V"),
+			newMethod(m_subClassAA, "a", "()V"),
+			newMethod(m_subClassB, "a", "()V")
 		));
 		
 		// doBThings
-		entries = m_index.getRelatedMethodImplementations(new MethodEntry(m_subClassB, "b", "()V"));
-		assertThat(entries, containsInAnyOrder(new MethodEntry(m_subClassB, "b", "()V")));
+		entries = m_index.getRelatedMethodImplementations(newMethod(m_subClassB, "b", "()V"));
+		assertThat(entries, containsInAnyOrder(newMethod(m_subClassB, "b", "()V")));
 	}
 	
 	@Test
@@ -163,7 +162,7 @@ public class TestJarIndexInheritanceTree {
 		Collection<EntryReference<BehaviorEntry,BehaviorEntry>> references;
 		
 		// baseClass constructor
-		source = new ConstructorEntry(m_baseClass, "(Ljava/lang/String;)V");
+		source = newConstructor(m_baseClass, "(Ljava/lang/String;)V");
 		references = m_index.getBehaviorReferences(source);
 		assertThat(references, containsInAnyOrder(
 			newBehaviorReferenceByConstructor(source, m_subClassA.getName(), "(Ljava/lang/String;)V"),
@@ -171,14 +170,14 @@ public class TestJarIndexInheritanceTree {
 		));
 		
 		// subClassA constructor
-		source = new ConstructorEntry(m_subClassA, "(Ljava/lang/String;)V");
+		source = newConstructor(m_subClassA, "(Ljava/lang/String;)V");
 		references = m_index.getBehaviorReferences(source);
 		assertThat(references, containsInAnyOrder(
 			newBehaviorReferenceByConstructor(source, m_subClassAA.getName(), "()V")
 		));
 		
 		// baseClass.getName()
-		source = new MethodEntry(m_baseClass, "a", "()Ljava/lang/String;");
+		source = newMethod(m_baseClass, "a", "()Ljava/lang/String;");
 		references = m_index.getBehaviorReferences(source);
 		assertThat(references, containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_subClassAA.getName(), "a", "()Ljava/lang/String;"),
@@ -186,7 +185,7 @@ public class TestJarIndexInheritanceTree {
 		));
 		
 		// subclassAA.getName()
-		source = new MethodEntry(m_subClassAA, "a", "()Ljava/lang/String;");
+		source = newMethod(m_subClassAA, "a", "()Ljava/lang/String;");
 		references = m_index.getBehaviorReferences(source);
 		assertThat(references, containsInAnyOrder(
 			newBehaviorReferenceByMethod(source, m_subClassAA.getName(), "a", "()V")
@@ -208,22 +207,22 @@ public class TestJarIndexInheritanceTree {
 		
 		// methods
 		// getName()
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_baseClass, "a", "()Ljava/lang/String;")), is(true));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassA, "a", "()Ljava/lang/String;")), is(false));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassAA, "a", "()Ljava/lang/String;")), is(true));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassB, "a", "()Ljava/lang/String;")), is(false));
+		assertThat(m_index.containsObfBehavior(newMethod(m_baseClass, "a", "()Ljava/lang/String;")), is(true));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassA, "a", "()Ljava/lang/String;")), is(false));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassAA, "a", "()Ljava/lang/String;")), is(true));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassB, "a", "()Ljava/lang/String;")), is(false));
 		
 		// doBaseThings()
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_baseClass, "a", "()V")), is(true));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassA, "a", "()V")), is(false));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassAA, "a", "()V")), is(true));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassB, "a", "()V")), is(true));
+		assertThat(m_index.containsObfBehavior(newMethod(m_baseClass, "a", "()V")), is(true));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassA, "a", "()V")), is(false));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassAA, "a", "()V")), is(true));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassB, "a", "()V")), is(true));
 		
 		// doBThings()
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_baseClass, "b", "()V")), is(false));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassA, "b", "()V")), is(false));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassAA, "b", "()V")), is(false));
-		assertThat(m_index.containsObfBehavior(new MethodEntry(m_subClassB, "b", "()V")), is(true));
+		assertThat(m_index.containsObfBehavior(newMethod(m_baseClass, "b", "()V")), is(false));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassA, "b", "()V")), is(false));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassAA, "b", "()V")), is(false));
+		assertThat(m_index.containsObfBehavior(newMethod(m_subClassB, "b", "()V")), is(true));
 		
 	}
 }

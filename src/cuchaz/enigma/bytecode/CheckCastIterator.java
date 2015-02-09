@@ -21,6 +21,7 @@ import javassist.bytecode.Opcode;
 import cuchaz.enigma.bytecode.CheckCastIterator.CheckCast;
 import cuchaz.enigma.mapping.ClassEntry;
 import cuchaz.enigma.mapping.MethodEntry;
+import cuchaz.enigma.mapping.Signature;
 
 public class CheckCastIterator implements Iterator<CheckCast> {
 	
@@ -99,7 +100,7 @@ public class CheckCastIterator implements Iterator<CheckCast> {
 				return new MethodEntry(
 					new ClassEntry(Descriptor.toJvmName(m_constants.getMethodrefClassName(index))),
 					m_constants.getMethodrefName(index),
-					m_constants.getMethodrefType(index)
+					new Signature(m_constants.getMethodrefType(index))
 				);
 			}
 			
@@ -108,7 +109,7 @@ public class CheckCastIterator implements Iterator<CheckCast> {
 				return new MethodEntry(
 					new ClassEntry(Descriptor.toJvmName(m_constants.getInterfaceMethodrefClassName(index))),
 					m_constants.getInterfaceMethodrefName(index),
-					m_constants.getInterfaceMethodrefType(index)
+					new Signature(m_constants.getInterfaceMethodrefType(index))
 				);
 			}
 		}

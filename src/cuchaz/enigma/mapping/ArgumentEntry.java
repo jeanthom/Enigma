@@ -82,7 +82,7 @@ public class ArgumentEntry implements Entry, Serializable {
 		return m_behaviorEntry.getName();
 	}
 	
-	public String getMethodSignature() {
+	public Signature getMethodSignature() {
 		return m_behaviorEntry.getSignature();
 	}
 	

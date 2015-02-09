@@ -23,8 +23,6 @@ import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
-import javassist.CtMethod;
-import javassist.NotFoundException;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.Descriptor;
 import javassist.bytecode.FieldInfo;
@@ -49,8 +47,8 @@ import cuchaz.enigma.mapping.ClassEntry;
 import cuchaz.enigma.mapping.ConstructorEntry;
 import cuchaz.enigma.mapping.Entry;
 import cuchaz.enigma.mapping.FieldEntry;
+import cuchaz.enigma.mapping.JavassistUtil;
 import cuchaz.enigma.mapping.MethodEntry;
-import cuchaz.enigma.mapping.SignatureUpdater;
 import cuchaz.enigma.mapping.Translator;
 
 public class JarIndex {
@@ -59,14 +57,13 @@ public class JarIndex {
 	private TranslationIndex m_translationIndex;
 	private Multimap<String,String> m_interfaces;
 	private Map<Entry,Access> m_access;
-	private Map<FieldEntry,ClassEntry> m_fieldClasses;
+	private Map<FieldEntry,ClassEntry> m_fieldClasses; // TODO: this will become obsolete!
 	private Multimap<String,MethodEntry> m_methodImplementations;
 	private Multimap<BehaviorEntry,EntryReference<BehaviorEntry,BehaviorEntry>> m_behaviorReferences;
 	private Multimap<FieldEntry,EntryReference<FieldEntry,BehaviorEntry>> m_fieldReferences;
 	private Multimap<String,String> m_innerClasses;
 	private Map<String,String> m_outerClasses;
 	private Map<String,BehaviorEntry> m_anonymousClasses;
-	private Map<MethodEntry,MethodEntry> m_bridgeMethods;
 	
 	public JarIndex() {
 		m_obfClassEntries = Sets.newHashSet();
@@ -80,10 +77,10 @@ public class JarIndex {
 		m_innerClasses = HashMultimap.create();
 		m_outerClasses = Maps.newHashMap();
 		m_anonymousClasses = Maps.newHashMap();
-		m_bridgeMethods = Maps.newHashMap();
 	}
 	
 	public void indexJar(JarFile jar, boolean buildInnerClasses) {
+		
 		// step 1: read the class names
 		for (ClassEntry classEntry : JarClassIterator.getClassEntries(jar)) {
 			if (classEntry.isInDefaultPackage()) {
@@ -96,18 +93,11 @@ public class JarIndex {
 		// step 2: index field/method/constructor access
 		for (CtClass c : JarClassIterator.classes(jar)) {
 			ClassRenamer.moveAllClassesOutOfDefaultPackage(c, Constants.NonePackage);
-			ClassEntry classEntry = new ClassEntry(Descriptor.toJvmName(c.getName()));
 			for (CtField field : c.getDeclaredFields()) {
-				FieldEntry fieldEntry = new FieldEntry(classEntry, field.getName());
-				m_access.put(fieldEntry, Access.get(field));
+				m_access.put(JavassistUtil.getFieldEntry(field), Access.get(field));
 			}
-			for (CtMethod method : c.getDeclaredMethods()) {
-				MethodEntry methodEntry = new MethodEntry(classEntry, method.getName(), method.getSignature());
-				m_access.put(methodEntry, Access.get(method));
-			}
-			for (CtConstructor constructor : c.getDeclaredConstructors()) {
-				ConstructorEntry constructorEntry = new ConstructorEntry(classEntry, constructor.getSignature());
-				m_access.put(constructorEntry, Access.get(constructor));
+			for (CtBehavior behavior : c.getDeclaredBehaviors()) {
+				m_access.put(JavassistUtil.getBehaviorEntry(behavior), Access.get(behavior));
 			}
 		}
 		
@@ -175,15 +165,8 @@ public class JarIndex {
 			EntryRenamer.renameClassesInMultimap(renames, m_methodImplementations);
 			EntryRenamer.renameClassesInMultimap(renames, m_behaviorReferences);
 			EntryRenamer.renameClassesInMultimap(renames, m_fieldReferences);
-			EntryRenamer.renameClassesInMap(renames, m_bridgeMethods);
 			EntryRenamer.renameClassesInMap(renames, m_access);
 		}
-		
-		// step 6: update other indices with bridge method info
-		EntryRenamer.renameMethodsInMultimap(m_bridgeMethods, m_methodImplementations);
-		EntryRenamer.renameMethodsInMultimap(m_bridgeMethods, m_behaviorReferences);
-		EntryRenamer.renameMethodsInMultimap(m_bridgeMethods, m_fieldReferences);
-		EntryRenamer.renameMethodsInMap(m_bridgeMethods, m_access);
 	}
 	
 	private void indexField(CtField field) {
@@ -206,17 +189,6 @@ public class JarIndex {
 			
 			// index implementation
 			m_methodImplementations.put(behaviorEntry.getClassName(), methodEntry);
-			
-			// look for bridge methods
-			CtMethod bridgedMethod = getBridgedMethod((CtMethod)behavior);
-			if (bridgedMethod != null) {
-				MethodEntry bridgedMethodEntry = new MethodEntry(
-					behaviorEntry.getClassEntry(),
-					bridgedMethod.getName(),
-					bridgedMethod.getSignature()
-				);
-				m_bridgeMethods.put(bridgedMethodEntry, methodEntry);
-			}
 		}
 		// looks like we don't care about constructors here
 	}
@@ -228,17 +200,13 @@ public class JarIndex {
 			behavior.instrument(new ExprEditor() {
 				@Override
 				public void edit(MethodCall call) {
-					MethodEntry calledMethodEntry = new MethodEntry(
-						new ClassEntry(Descriptor.toJvmName(call.getClassName())),
-						call.getMethodName(),
-						call.getSignature()
-					);
+					MethodEntry calledMethodEntry = JavassistUtil.getMethodEntry(call);
 					ClassEntry resolvedClassEntry = m_translationIndex.resolveEntryClass(calledMethodEntry);
 					if (resolvedClassEntry != null && !resolvedClassEntry.equals(calledMethodEntry.getClassEntry())) {
 						calledMethodEntry = new MethodEntry(
 							resolvedClassEntry,
-							call.getMethodName(),
-							call.getSignature()
+							calledMethodEntry.getName(),
+							calledMethodEntry.getSignature()
 						);
 					}
 					EntryReference<BehaviorEntry,BehaviorEntry> reference = new EntryReference<BehaviorEntry,BehaviorEntry>(
@@ -251,10 +219,7 @@ public class JarIndex {
 				
 				@Override
 				public void edit(FieldAccess call) {
-					FieldEntry calledFieldEntry = new FieldEntry(
-						new ClassEntry(Descriptor.toJvmName(call.getClassName())),
-						call.getFieldName()
-					);
+					FieldEntry calledFieldEntry = JavassistUtil.getFieldEntry(call);
 					ClassEntry resolvedClassEntry = m_translationIndex.resolveEntryClass(calledFieldEntry);
 					if (resolvedClassEntry != null && !resolvedClassEntry.equals(calledFieldEntry.getClassEntry())) {
 						calledFieldEntry = new FieldEntry(resolvedClassEntry, call.getFieldName());
@@ -269,10 +234,7 @@ public class JarIndex {
 				
 				@Override
 				public void edit(ConstructorCall call) {
-					ConstructorEntry calledConstructorEntry = new ConstructorEntry(
-						new ClassEntry(Descriptor.toJvmName(call.getClassName())),
-						call.getSignature()
-					);
+					ConstructorEntry calledConstructorEntry = JavassistUtil.getConstructorEntry(call);
 					EntryReference<BehaviorEntry,BehaviorEntry> reference = new EntryReference<BehaviorEntry,BehaviorEntry>(
 						calledConstructorEntry,
 						call.getMethodName(),
@@ -283,10 +245,7 @@ public class JarIndex {
 				
 				@Override
 				public void edit(NewExpr call) {
-					ConstructorEntry calledConstructorEntry = new ConstructorEntry(
-						new ClassEntry(Descriptor.toJvmName(call.getClassName())),
-						call.getSignature()
-					);
+					ConstructorEntry calledConstructorEntry = JavassistUtil.getConstructorEntry(call);
 					EntryReference<BehaviorEntry,BehaviorEntry> reference = new EntryReference<BehaviorEntry,BehaviorEntry>(
 						calledConstructorEntry,
 						call.getClassName(),
@@ -297,45 +256,6 @@ public class JarIndex {
 			});
 		} catch (CannotCompileException ex) {
 			throw new Error(ex);
-		}
-	}
-	
-	private CtMethod getBridgedMethod(CtMethod method) {
-		
-		// bridge methods just call another method, cast it to the return type, and return the result
-		// let's see if we can detect this scenario
-		
-		// skip non-synthetic methods
-		if ( (method.getModifiers() & AccessFlag.SYNTHETIC) == 0) {
-			return null;
-		}
-		
-		// get all the called methods
-		final List<MethodCall> methodCalls = Lists.newArrayList();
-		try {
-			method.instrument(new ExprEditor() {
-				@Override
-				public void edit(MethodCall call) {
-					methodCalls.add(call);
-				}
-			});
-		} catch (CannotCompileException ex) {
-			// this is stupid... we're not even compiling anything
-			throw new Error(ex);
-		}
-		
-		// is there just one?
-		if (methodCalls.size() != 1) {
-			return null;
-		}
-		MethodCall call = methodCalls.get(0);
-		
-		try {
-			// we have a bridge method!
-			return call.getMethod();
-		} catch (NotFoundException ex) {
-			// can't find the type? not a bridge method
-			return null;
 		}
 	}
 	
@@ -353,10 +273,7 @@ public class JarIndex {
 			}
 			
 			ClassEntry classEntry = new ClassEntry(Descriptor.toJvmName(c.getName()));
-			ConstructorEntry constructorEntry = new ConstructorEntry(
-				classEntry,
-				constructor.getMethodInfo().getDescriptor()
-			);
+			ConstructorEntry constructorEntry = JavassistUtil.getConstructorEntry(constructor);
 			
 			// gather the classes from the illegally-set synthetic fields
 			Set<ClassEntry> illegallySetClasses = Sets.newHashSet();
@@ -522,10 +439,7 @@ public class JarIndex {
 		CtConstructor constructor = c.getDeclaredConstructors()[0];
 		
 		// is this constructor called exactly once?
-		ConstructorEntry constructorEntry = new ConstructorEntry(
-			innerClassEntry,
-			constructor.getMethodInfo().getDescriptor()
-		);
+		ConstructorEntry constructorEntry = JavassistUtil.getConstructorEntry(constructor);
 		Collection<EntryReference<BehaviorEntry,BehaviorEntry>> references = getBehaviorReferences(constructorEntry);
 		if (references.size() != 1) {
 			return null;
@@ -541,12 +455,8 @@ public class JarIndex {
 			}
 		}
 		for (BehaviorEntry behaviorEntry : getReferencedBehaviors(caller)) {
-			// get the class types from the signature
-			for (String className : SignatureUpdater.getClasses(behaviorEntry.getSignature())) {
-				if (className.equals(innerClassEntry.getName())) {
-					// caller references this type, so it can't be anonymous
-					return null;
-				}
+			if (behaviorEntry.getSignature().hasClass(innerClassEntry)) {
+				return null;
 			}
 		}
 		
@@ -782,10 +692,6 @@ public class JarIndex {
 		return m_interfaces.containsValue(className);
 	}
 	
-	public MethodEntry getBridgeMethod(MethodEntry methodEntry) {
-		return m_bridgeMethods.get(methodEntry);
-	}
-	
 	public boolean containsObfClass(ClassEntry obfClassEntry) {
 		return m_obfClassEntries.contains(obfClassEntry);
 	}
@@ -805,7 +711,7 @@ public class JarIndex {
 		}
 		
 		// check the argument
-		if (obfArgumentEntry.getIndex() >= Descriptor.numOfParameters(obfArgumentEntry.getBehaviorEntry().getSignature())) {
+		if (obfArgumentEntry.getIndex() >= obfArgumentEntry.getBehaviorEntry().getSignature().getArgumentTypes().size()) {
 			return false;
 		}
 		

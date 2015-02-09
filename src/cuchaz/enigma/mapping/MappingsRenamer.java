@@ -100,7 +100,7 @@ public class MappingsRenamer {
 		
 		deobfName = NameValidator.validateMethodName(deobfName);
 		for (MethodEntry entry : implementations) {
-			String deobfSignature = m_mappings.getTranslator(TranslationDirection.Deobfuscating, m_index.getTranslationIndex()).translateSignature(obf.getSignature());
+			Signature deobfSignature = m_mappings.getTranslator(TranslationDirection.Deobfuscating, m_index.getTranslationIndex()).translateSignature(obf.getSignature());
 			MethodEntry targetEntry = new MethodEntry(entry.getClassEntry(), deobfName, deobfSignature);
 			if (m_mappings.containsDeobfMethod(entry.getClassEntry(), deobfName, entry.getSignature()) || m_index.containsObfBehavior(targetEntry)) {
 				String deobfClassName = m_mappings.getTranslator(TranslationDirection.Deobfuscating, m_index.getTranslationIndex()).translateClass(entry.getClassName());

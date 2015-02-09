@@ -154,11 +154,6 @@ public class TestJarIndexLoneClass {
 	}
 	
 	@Test
-	public void bridgeMethods() {
-		assertThat(m_index.getBridgeMethod(newMethod("none/a", "a", "()Ljava/lang/String;")), is(nullValue()));
-	}
-	
-	@Test
 	public void contains() {
 		assertThat(m_index.containsObfClass(newClass("none/a")), is(true));
 		assertThat(m_index.containsObfClass(newClass("none/b")), is(false));

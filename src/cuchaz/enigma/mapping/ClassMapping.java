@@ -231,11 +231,11 @@ public class ClassMapping implements Serializable, Comparable<ClassMapping> {
 		return m_methodsByObf.values();
 	}
 	
-	public boolean containsObfMethod(String obfName, String obfSignature) {
+	public boolean containsObfMethod(String obfName, Signature obfSignature) {
 		return m_methodsByObf.containsKey(getMethodKey(obfName, obfSignature));
 	}
 	
-	public boolean containsDeobfMethod(String deobfName, String deobfSignature) {
+	public boolean containsDeobfMethod(String deobfName, Signature deobfSignature) {
 		return m_methodsByDeobf.containsKey(getMethodKey(deobfName, deobfSignature));
 	}
 	
@@ -266,15 +266,15 @@ public class ClassMapping implements Serializable, Comparable<ClassMapping> {
 		}
 	}
 	
-	public MethodMapping getMethodByObf(String obfName, String signature) {
+	public MethodMapping getMethodByObf(String obfName, Signature signature) {
 		return m_methodsByObf.get(getMethodKey(obfName, signature));
 	}
 	
-	public MethodMapping getMethodByDeobf(String deobfName, String signature) {
+	public MethodMapping getMethodByDeobf(String deobfName, Signature signature) {
 		return m_methodsByDeobf.get(getMethodKey(deobfName, signature));
 	}
 	
-	private String getMethodKey(String name, String signature) {
+	private String getMethodKey(String name, Signature signature) {
 		if (name == null) {
 			throw new IllegalArgumentException("name cannot be null!");
 		}
@@ -284,7 +284,7 @@ public class ClassMapping implements Serializable, Comparable<ClassMapping> {
 		return name + signature;
 	}
 	
-	public void setMethodName(String obfName, String obfSignature, String deobfName) {
+	public void setMethodName(String obfName, Signature obfSignature, String deobfName) {
 		MethodMapping methodMapping = m_methodsByObf.get(getMethodKey(obfName, obfSignature));
 		if (methodMapping == null) {
 			methodMapping = createMethodMapping(obfName, obfSignature);
@@ -301,7 +301,7 @@ public class ClassMapping implements Serializable, Comparable<ClassMapping> {
 	
 	//// ARGUMENTS ////////
 	
-	public void setArgumentName(String obfMethodName, String obfMethodSignature, int argumentIndex, String argumentName) {
+	public void setArgumentName(String obfMethodName, Signature obfMethodSignature, int argumentIndex, String argumentName) {
 		MethodMapping methodMapping = m_methodsByObf.get(getMethodKey(obfMethodName, obfMethodSignature));
 		if (methodMapping == null) {
 			methodMapping = createMethodMapping(obfMethodName, obfMethodSignature);
@@ -309,11 +309,11 @@ public class ClassMapping implements Serializable, Comparable<ClassMapping> {
 		methodMapping.setArgumentName(argumentIndex, argumentName);
 	}
 	
-	public void removeArgumentName(String obfMethodName, String obfMethodSignature, int argumentIndex) {
+	public void removeArgumentName(String obfMethodName, Signature obfMethodSignature, int argumentIndex) {
 		m_methodsByObf.get(getMethodKey(obfMethodName, obfMethodSignature)).removeArgumentName(argumentIndex);
 	}
 	
-	private MethodMapping createMethodMapping(String obfName, String obfSignature) {
+	private MethodMapping createMethodMapping(String obfName, Signature obfSignature) {
 		MethodMapping methodMapping = new MethodMapping(obfName, obfSignature);
 		boolean wasAdded = m_methodsByObf.put(getMethodKey(obfName, obfSignature), methodMapping) == null;
 		assert (wasAdded);

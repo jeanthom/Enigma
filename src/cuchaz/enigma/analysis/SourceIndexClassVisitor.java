@@ -30,6 +30,7 @@ import cuchaz.enigma.mapping.BehaviorEntryFactory;
 import cuchaz.enigma.mapping.ClassEntry;
 import cuchaz.enigma.mapping.ConstructorEntry;
 import cuchaz.enigma.mapping.FieldEntry;
+import cuchaz.enigma.mapping.Signature;
 
 public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	
@@ -84,7 +85,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitConstructorDeclaration(ConstructorDeclaration node, SourceIndex index) {
 		MethodDefinition def = node.getUserData(Keys.METHOD_DEFINITION);
 		ClassEntry classEntry = new ClassEntry(def.getDeclaringType().getInternalName());
-		ConstructorEntry constructorEntry = new ConstructorEntry(classEntry, def.getSignature());
+		ConstructorEntry constructorEntry = new ConstructorEntry(classEntry, new Signature(def.getSignature()));
 		index.addDeclaration(node.getNameToken(), constructorEntry);
 		return node.acceptVisitor(new SourceIndexBehaviorVisitor(constructorEntry), index);
 	}

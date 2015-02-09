@@ -20,7 +20,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import cuchaz.enigma.analysis.TranslationIndex;
-import cuchaz.enigma.mapping.SignatureUpdater.ClassNameUpdater;
 
 public class Mappings implements Serializable {
 	
@@ -143,18 +142,17 @@ public class Mappings implements Serializable {
 	public Set<String> getAllObfClassNames() {
 		final Set<String> classNames = Sets.newHashSet();
 		for (ClassMapping classMapping : classes()) {
+			
 			// add the class name
 			classNames.add(classMapping.getObfName());
 			
 			// add classes from method signatures
 			for (MethodMapping methodMapping : classMapping.methods()) {
-				SignatureUpdater.update(methodMapping.getObfSignature(), new ClassNameUpdater() {
-					@Override
-					public String update(String className) {
-						classNames.add(className);
-						return className;
+				for (Type type : methodMapping.getObfSignature().types()) {
+					if (type.hasClass()) {
+						classNames.add(type.getClassEntry().getClassName());
 					}
-				});
+				}
 			}
 		}
 		return classNames;
@@ -172,7 +170,7 @@ public class Mappings implements Serializable {
 		return false;
 	}
 	
-	public boolean containsDeobfMethod(ClassEntry obfClassEntry, String deobfName, String deobfSignature) {
+	public boolean containsDeobfMethod(ClassEntry obfClassEntry, String deobfName, Signature deobfSignature) {
 		ClassMapping classMapping = m_classesByObf.get(obfClassEntry.getName());
 		if (classMapping != null) {
 			return classMapping.containsDeobfMethod(deobfName, deobfSignature);

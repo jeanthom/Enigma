@@ -11,5 +11,5 @@
 package cuchaz.enigma.mapping;
 
 public interface BehaviorEntry extends Entry {
-	String getSignature();
+	Signature getSignature();
 }
