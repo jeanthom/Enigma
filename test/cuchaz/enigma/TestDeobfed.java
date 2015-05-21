@@ -31,7 +31,7 @@ public class TestDeobfed {
 	@BeforeClass
 	public static void beforeClass()
 	throws Exception {
-		m_jar = new JarFile("build/testTranslation.deobf.jar");
+		m_jar = new JarFile("build/test-deobf/translation.jar");
 		m_index = new JarIndex();
 		m_index.indexJar(m_jar, true);
 	}

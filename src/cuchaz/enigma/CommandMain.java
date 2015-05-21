@@ -152,8 +152,12 @@ public class CommandMain {
 		}
 		File file = new File(path).getAbsoluteFile();
 		File dir = file.getParentFile();
-		if (dir == null || !dir.exists()) {
-			throw new IllegalArgumentException("Cannot write to folder: " + file);
+		if (dir == null) {
+			throw new IllegalArgumentException("Cannot write to folder: " + dir);
+		}
+		// quick fix to avoid stupid stuff in Gradle code
+		if (!dir.isDirectory()) {
+			dir.mkdirs();
 		}
 		return file;
 	}

@@ -26,7 +26,7 @@ public class TestDeobfuscator {
 	
 	private Deobfuscator getDeobfuscator()
 	throws IOException {
-		return new Deobfuscator(new JarFile("build/testLoneClass.obf.jar"));
+		return new Deobfuscator(new JarFile("build/test-obf/loneClass.jar"));
 	}
 	
 	@Test

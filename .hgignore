@@ -2,7 +2,11 @@
 syntax: glob
 bin
 lib
+out
 build
+*.iml
+.idea
+.gradle
 data
 input
 ivy

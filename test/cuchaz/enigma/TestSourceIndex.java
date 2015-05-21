@@ -22,14 +22,29 @@ import com.strobel.decompiler.languages.java.ast.CompilationUnit;
 import cuchaz.enigma.mapping.ClassEntry;
 
 public class TestSourceIndex {
-	
 	@Test
 	public void indexEverything()
 	throws Exception {
-		
-		File home = new File(System.getProperty("user.home"));
-		File jarFile = new File(home, "/.minecraft/versions/1.8.3/1.8.3.jar");
-		Deobfuscator deobfuscator = new Deobfuscator(new JarFile(jarFile));
+		// Figure out where Minecraft is...
+		final String mcDir = System.getProperty("enigma.test.minecraftdir");
+		File mcJar = null;
+		if (mcDir == null) {
+			String osname = System.getProperty("os.name").toLowerCase();
+			if (osname.contains("nix") || osname.contains("nux") || osname.contains("solaris")) {
+				mcJar = new File(System.getProperty("user.home"), ".minecraft/versions/1.8.3/1.8.3.jar");
+			}
+			else if (osname.contains("mac") || osname.contains("darwin")) {
+				mcJar = new File(System.getProperty("user.home"), "Library/Application Support/minecraft/versions/1.8.3/1.8.3.jar");
+			}
+			else if (osname.contains("win")) {
+				mcJar = new File(System.getenv("AppData"), ".minecraft/versions/1.8.3/1.8.3.jar");
+			}
+		}
+		else {
+			mcJar = new File(mcDir, "versions/1.8.3/1.8.3.jar");
+		}
+
+		Deobfuscator deobfuscator = new Deobfuscator(new JarFile(mcJar));
 		
 		// get all classes that aren't inner classes
 		Set<ClassEntry> classEntries = Sets.newHashSet();

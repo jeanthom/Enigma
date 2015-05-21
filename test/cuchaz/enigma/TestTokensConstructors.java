@@ -24,7 +24,7 @@ public class TestTokensConstructors extends TokenChecker {
 	
 	public TestTokensConstructors()
 	throws Exception {
-		super(new JarFile("build/testConstructors.obf.jar"));
+		super(new JarFile("build/test-obf/constructors.jar"));
 	}
 	
 	@Test

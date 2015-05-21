@@ -38,7 +38,7 @@ public class TestTranslator {
 	@BeforeClass
 	public static void beforeClass()
 	throws Exception {
-		m_deobfuscator = new Deobfuscator(new JarFile("build/testTranslation.obf.jar"));
+		m_deobfuscator = new Deobfuscator(new JarFile("build/test-obf/translation.jar"));
 		try (InputStream in = TestTranslator.class.getResourceAsStream("/cuchaz/enigma/resources/translation.mappings")) {
 			m_mappings = new MappingsReader().read(new InputStreamReader(in));
 			m_deobfuscator.setMappings(m_mappings);

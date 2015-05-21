@@ -44,8 +44,8 @@ TestDeps = [
 
 def buildTestJar(name, glob):
 
-	pathJar = os.path.join(DirBuild, "%s.jar" % name)
-	pathObfJar = os.path.join(DirBuild, "%s.obf.jar" % name)
+	pathJar = os.path.join(DirBuild, "test-inputs/%s.jar" % name)
+	pathObfJar = os.path.join(DirBuild, "test-obf/%s.jar" % name)
 
 	# build the unobf jar
 	with ssjb.file.TempDir("tmp") as dirTemp:
@@ -56,7 +56,7 @@ def buildTestJar(name, glob):
 	# build the obf jar
 	ssjb.callJavaJar(
 		os.path.join(DirLib, "proguard.jar"),
-		["@proguard.conf", "-injars", pathJar, "-outjars", pathObfJar]
+		["@proguard-test.conf", "-injars", pathJar, "-outjars", pathObfJar]
 	)
 
 def buildDeobfTestJar(outPath, inPath):
@@ -107,15 +107,15 @@ def taskGetDeps():
 	ssjb.ivy.makeJar(os.path.join(DirLib, "proguard.jar"), ProguardDep)
 
 def taskBuildTestJars():
-	buildTestJar("testLoneClass", "cuchaz/enigma/inputs/loneClass/*.class")
-	buildTestJar("testConstructors", "cuchaz/enigma/inputs/constructors/*.class")
-	buildTestJar("testInheritanceTree", "cuchaz/enigma/inputs/inheritanceTree/*.class")
-	buildTestJar("testInnerClasses", "cuchaz/enigma/inputs/innerClasses/*.class")
+	buildTestJar("loneClass", "cuchaz/enigma/inputs/loneClass/*.class")
+	buildTestJar("constructors", "cuchaz/enigma/inputs/constructors/*.class")
+	buildTestJar("inheritanceTree", "cuchaz/enigma/inputs/inheritanceTree/*.class")
+	buildTestJar("innerClasses", "cuchaz/enigma/inputs/innerClasses/*.class")
 	taskBuildTranslationTestJar()
 
 def taskBuildTranslationTestJar():
-	buildTestJar("testTranslation", "cuchaz/enigma/inputs/translation/*.class")
-	buildDeobfTestJar(os.path.join(DirBuild, "testTranslation.deobf.jar"), os.path.join(DirBuild, "testTranslation.obf.jar"))
+	buildTestJar("translation", "cuchaz/enigma/inputs/translation/*.class")
+	buildDeobfTestJar(os.path.join(DirBuild, "test-deobf/translation.jar"), os.path.join(DirBuild, "test-obf/translation.jar"))
 
 def taskBuild():
 	ssjb.file.delete(DirBuild)

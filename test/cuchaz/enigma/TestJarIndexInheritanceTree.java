@@ -43,7 +43,7 @@ public class TestJarIndexInheritanceTree {
 	public TestJarIndexInheritanceTree()
 	throws Exception {
 		m_index = new JarIndex();
-		m_index.indexJar(new JarFile("build/testInheritanceTree.obf.jar"), false);
+		m_index.indexJar(new JarFile("build/test-obf/inheritanceTree.jar"), false);
 	}
 	
 	@Test
