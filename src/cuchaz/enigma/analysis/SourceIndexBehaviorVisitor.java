@@ -49,31 +49,33 @@ public class SourceIndexBehaviorVisitor extends SourceIndexVisitor {
 	public Void visitInvocationExpression(InvocationExpression node, SourceIndex index) {
 		MemberReference ref = node.getUserData(Keys.MEMBER_REFERENCE);
 		
-		// get the behavior entry
-		ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
-		BehaviorEntry behaviorEntry = null;
-		if (ref instanceof MethodReference) {
-			MethodReference methodRef = (MethodReference)ref;
-			if (methodRef.isConstructor()) {
-				behaviorEntry = new ConstructorEntry(classEntry, new Signature(ref.getErasedSignature()));
-			} else if (methodRef.isTypeInitializer()) {
-				behaviorEntry = new ConstructorEntry(classEntry);
-			} else {
-				behaviorEntry = new MethodEntry(classEntry, ref.getName(), new Signature(ref.getErasedSignature()));
+		if (ref != null) {
+			// get the behavior entry
+			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
+			BehaviorEntry behaviorEntry = null;
+			if (ref instanceof MethodReference) {
+				MethodReference methodRef = (MethodReference)ref;
+				if (methodRef.isConstructor()) {
+					behaviorEntry = new ConstructorEntry(classEntry, new Signature(ref.getErasedSignature()));
+				} else if (methodRef.isTypeInitializer()) {
+					behaviorEntry = new ConstructorEntry(classEntry);
+				} else {
+					behaviorEntry = new MethodEntry(classEntry, ref.getName(), new Signature(ref.getErasedSignature()));
+				}
 			}
-		}
-		if (behaviorEntry != null) {
-			// get the node for the token
-			AstNode tokenNode = null;
-			if (node.getTarget() instanceof MemberReferenceExpression) {
-				tokenNode = ((MemberReferenceExpression)node.getTarget()).getMemberNameToken();
-			} else if (node.getTarget() instanceof SuperReferenceExpression) {
-				tokenNode = node.getTarget();
-			} else if (node.getTarget() instanceof ThisReferenceExpression) {
-				tokenNode = node.getTarget();
-			}
-			if (tokenNode != null) {
-				index.addReference(tokenNode, behaviorEntry, m_behaviorEntry);
+			if (behaviorEntry != null) {
+				// get the node for the token
+				AstNode tokenNode = null;
+				if (node.getTarget() instanceof MemberReferenceExpression) {
+					tokenNode = ((MemberReferenceExpression)node.getTarget()).getMemberNameToken();
+				} else if (node.getTarget() instanceof SuperReferenceExpression) {
+					tokenNode = node.getTarget();
+				} else if (node.getTarget() instanceof ThisReferenceExpression) {
+					tokenNode = node.getTarget();
+				}
+				if (tokenNode != null) {
+					index.addReference(tokenNode, behaviorEntry, m_behaviorEntry);
+				}
 			}
 		}
 		
