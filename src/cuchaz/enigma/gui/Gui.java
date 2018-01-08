@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.jar.JarFile;
+import java.awt.datatransfer.*;
+import java.awt.Toolkit;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
@@ -124,6 +126,7 @@ public class Gui {
 	private JMenuItem m_toggleMappingMenu;
 	private JMenuItem m_exportSourceMenu;
 	private JMenuItem m_exportJarMenu;
+	private JMenuItem m_copySourceMenu;
 	
 	// state
 	private EntryReference<Entry,Entry> m_reference;
@@ -353,6 +356,19 @@ public class Gui {
 			menu.setEnabled(false);
 			popupMenu.add(menu);
 			m_toggleMappingMenu = menu;
+		}
+		{
+			JMenuItem menu = new JMenuItem("Copy source");
+			menu.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent event) {
+						copySource();
+					}
+				});
+			menu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, 0));
+			menu.setEnabled(false);
+			popupMenu.add(menu);
+			m_copySourceMenu = menu;
 		}
 		
 		// init inheritance panel
@@ -889,6 +905,7 @@ public class Gui {
 		m_openEntryMenu.setEnabled(isInJar && (isClassEntry || isFieldEntry || isMethodEntry || isConstructorEntry));
 		m_openPreviousMenu.setEnabled(m_controller.hasPreviousLocation());
 		m_toggleMappingMenu.setEnabled(isRenameable && isToken);
+		m_copySourceMenu.setEnabled(isInJar && (isClassEntry || isFieldEntry || isMethodEntry || isConstructorEntry));
 		
 		if (isToken && m_controller.entryHasDeobfuscatedName(m_reference.entry)) {
 			m_toggleMappingMenu.setText("Reset to obfuscated");
@@ -1063,6 +1080,12 @@ public class Gui {
 		
 		m_tabs.setSelectedIndex(2);
 		redraw();
+	}
+
+	private void copySource() {
+		StringSelection stringSelection = new StringSelection(m_editor.getText());
+		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clpbrd.setContents(stringSelection, null);
 	}
 	
 	private void toggleMapping() {
